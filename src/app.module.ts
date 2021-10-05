@@ -3,17 +3,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TagsModule } from './tags/tags.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { getConnectionOptions } from 'typeorm';
+import connectionOptions from './ormconfig';
 
 @Module({
   imports: [
-    TypeOrmModule.forRootAsync({
-      useFactory: async () =>
-        Object.assign(await getConnectionOptions(), {
-          autoLoadEntities: true,
-          synchronize: true,
-        }),
-    }),
+    TypeOrmModule.forRoot({ ...connectionOptions, autoLoadEntities: true }),
     TagsModule,
   ],
   controllers: [AppController],
