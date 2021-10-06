@@ -1,7 +1,7 @@
 import {
+  Body,
   Controller,
   Post,
-  Body,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -23,7 +23,7 @@ export class UsersController {
     return this.usersService.buildUserResponse(user);
   }
 
-  @Post('/login')
+  @Post('login')
   @UsePipes(new ValidationPipe())
   async login(@Body('user') dto: LoginUserDto): Promise<UserResponseInterface> {
     const user = await this.usersService.login(dto);
