@@ -18,22 +18,6 @@ export class UsersService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  async checkEmailIsTaken(dto: CreateUserDto): Promise<boolean> {
-    const user = await this.userRepository.findOne({
-      email: dto.email,
-    });
-
-    return !!user;
-  }
-
-  async checkUsernameIsTaken(dto: CreateUserDto): Promise<boolean> {
-    const user = await this.userRepository.findOne({
-      username: dto.username,
-    });
-
-    return !!user;
-  }
-
   generateJwt(user: User): string {
     return sign(
       {
@@ -45,18 +29,24 @@ export class UsersService {
     );
   }
 
-  buildUserResponse(user: User): UserResponseInterface {
+  buildUserResponse(
+    user: User,
+    options = { withToken: false },
+  ): UserResponseInterface {
     return {
-      user: { ...user, token: this.generateJwt(user) },
+      user: {
+        ...user,
+        token: options.withToken ? this.generateJwt(user) : undefined,
+      },
     };
   }
 
   async create(dto: CreateUserDto): Promise<User> {
     switch (true) {
       case !!(await this.userRepository.findOne({ email: dto.email })):
-        throw new UnprocessableEntityException('Email is already taken');
+        throw new UnprocessableEntityException('email is already taken');
       case !!(await this.userRepository.findOne({ username: dto.username })):
-        throw new UnprocessableEntityException('Username is already taken');
+        throw new UnprocessableEntityException('username is already taken');
       default:
         return await this.userRepository.save(dto);
     }
@@ -70,12 +60,16 @@ export class UsersService {
 
     switch (false) {
       case !!user:
-        throw new ForbiddenException('Invalid credentials');
+        throw new ForbiddenException('invalid credentials');
       case await compare(dto.password, user.password):
-        throw new ForbiddenException('Invalid credentials');
+        throw new ForbiddenException('invalid credentials');
       default:
         delete user.password;
         return user;
     }
+  }
+
+  async findOne(id: string): Promise<User> {
+    return await this.userRepository.findOne(id);
   }
 }
