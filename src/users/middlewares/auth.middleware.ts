@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NestMiddleware,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
 import { ExpressRequestInterface } from '../../types/express-request.interface';
 import { JwtPayload, verify } from 'jsonwebtoken';
@@ -17,7 +13,7 @@ export class AuthMiddleware implements NestMiddleware {
 
     if (!authorization) {
       req.user = null;
-      next(new UnauthorizedException('authorization required'));
+      next();
     } else {
       try {
         const jwtPayload = verify(
@@ -28,7 +24,7 @@ export class AuthMiddleware implements NestMiddleware {
         next();
       } catch (err) {
         req.user = null;
-        next(new UnauthorizedException('authorization required'));
+        next();
       }
     }
   }
