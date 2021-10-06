@@ -4,11 +4,11 @@ import {
   Body,
   UsePipes,
   ValidationPipe,
-  UnprocessableEntityException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseInterface } from './types/user-response.interface';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -19,14 +19,14 @@ export class UsersController {
   async create(
     @Body('user') dto: CreateUserDto,
   ): Promise<UserResponseInterface> {
-    switch (true) {
-      case await this.usersService.checkEmailIsTaken(dto):
-        throw new UnprocessableEntityException('Email is already taken');
-      case await this.usersService.checkUsernameIsTaken(dto):
-        throw new UnprocessableEntityException('Username is already taken');
-      default:
-        const user = await this.usersService.create(dto);
-        return this.usersService.buildUserResponse(user);
-    }
+    const user = await this.usersService.create(dto);
+    return this.usersService.buildUserResponse(user);
+  }
+
+  @Post('/login')
+  @UsePipes(new ValidationPipe())
+  async login(@Body('user') dto: LoginUserDto): Promise<UserResponseInterface> {
+    const user = await this.usersService.login(dto);
+    return this.usersService.buildUserResponse(user);
   }
 }
