@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -11,6 +12,7 @@ import { sign } from 'jsonwebtoken';
 import { UserResponseInterface } from './types/user-response.interface';
 import { LoginUserDto } from './dto/login-user.dto';
 import { compare } from 'bcrypt';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -70,6 +72,18 @@ export class UsersService {
   }
 
   async findOne(id: string): Promise<User> {
-    return await this.userRepository.findOne(id);
+    const user = await this.userRepository.findOne(id);
+
+    if (!user) {
+      throw new NotFoundException('user not found');
+    } else {
+      return user;
+    }
+  }
+
+  async update(id: string, dto: UpdateUserDto) {
+    const user = await this.findOne(id);
+    Object.assign(user, dto);
+    return await this.userRepository.save(user);
   }
 }

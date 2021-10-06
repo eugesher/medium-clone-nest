@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   UseGuards,
   UsePipes,
@@ -16,6 +17,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { UserDecorator } from './decorators/user.decorator';
 import { User } from './entities/user.entity';
 import { AuthGuard } from './guards/auth.guard';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -43,6 +45,16 @@ export class UsersController {
   async getCurrent(
     @UserDecorator() user: User,
   ): Promise<UserResponseInterface> {
+    return this.usersService.buildUserResponse(user);
+  }
+
+  @Patch('me')
+  @UseGuards(AuthGuard)
+  async updateCurrent(
+    @UserDecorator('id') id: string,
+    @Body('user') dto: UpdateUserDto,
+  ) {
+    const user = await this.usersService.update(id, dto);
     return this.usersService.buildUserResponse(user);
   }
 }
