@@ -12,6 +12,22 @@ export class UsersService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
+  async checkEmailIsTaken(dto: CreateUserDto): Promise<boolean> {
+    const user = await this.userRepository.findOne({
+      email: dto.email,
+    });
+
+    return !!user;
+  }
+
+  async checkUsernameIsTaken(dto: CreateUserDto): Promise<boolean> {
+    const user = await this.userRepository.findOne({
+      username: dto.username,
+    });
+
+    return !!user;
+  }
+
   generateJwt(user: User): string {
     return sign(
       {
@@ -32,22 +48,7 @@ export class UsersService {
   async create(dto: CreateUserDto): Promise<User> {
     const user = new User();
     Object.assign(user, dto);
+
     return await this.userRepository.save(user);
   }
-
-  // findAll() {
-  //   return `This action returns all users`;
-  // }
-  //
-  // findOne(id: number) {
-  //   return `This action returns a #${id} user`;
-  // }
-  //
-  // update(id: number, updateUserDto: UpdateUserDto) {
-  //   return `This action updates a #${id} user`;
-  // }
-  //
-  // remove(id: number) {
-  //   return `This action removes a #${id} user`;
-  // }
 }
