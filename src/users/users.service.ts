@@ -50,7 +50,9 @@ export class UsersService {
       case !!(await this.userRepository.findOne({ username: dto.username })):
         throw new UnprocessableEntityException('username is already taken');
       default:
-        return await this.userRepository.save(dto);
+        const user = new User();
+        Object.assign(user, dto);
+        return await this.userRepository.save(user);
     }
   }
 
