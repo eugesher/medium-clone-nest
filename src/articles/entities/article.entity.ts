@@ -38,7 +38,7 @@ export class Article {
   @Column({ name: 'favorites_count', default: 0 })
   favoritesCount: number;
 
-  @ManyToOne(() => User, (user) => user.articles)
+  @ManyToOne(() => User, (user) => user.articles, { eager: true })
   @JoinColumn({ name: 'author_id' })
   author: User;
 }

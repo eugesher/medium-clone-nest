@@ -49,8 +49,12 @@ export class ArticlesController {
   //   return this.articlesService.update(+id, updateArticleDto);
   // }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.articlesService.remove(+id);
-  // }
+  @Delete(':slug')
+  @UseGuards(AuthGuard)
+  async remove(
+    @UserDecorator('id') userId: string,
+    @Param('slug') slug: string,
+  ) {
+    return this.articlesService.remove(userId, slug);
+  }
 }
