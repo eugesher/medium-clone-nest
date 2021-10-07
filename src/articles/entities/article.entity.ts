@@ -2,9 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
 @Entity()
 export class Article {
@@ -34,4 +37,8 @@ export class Article {
 
   @Column({ name: 'favorites_count', default: 0 })
   favoritesCount: number;
+
+  @ManyToOne(() => User, (user) => user.articles)
+  @JoinColumn({ name: 'author_id' })
+  author: User;
 }
