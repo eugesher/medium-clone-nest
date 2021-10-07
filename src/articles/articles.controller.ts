@@ -71,4 +71,14 @@ export class ArticlesController {
   ) {
     return this.articlesService.remove(userId, slug);
   }
+
+  @Post(':slug/favorite')
+  @UseGuards(AuthGuard)
+  async addToFavorites(
+    @UserDecorator('id') userId: string,
+    @Param('slug') slug: string,
+  ): Promise<ArticleResponseInterface> {
+    const article = await this.articlesService.addToFavorites(userId, slug);
+    return this.articlesService.buildArticleResponse(article);
+  }
 }
