@@ -6,12 +6,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import connectionOptions from './ormconfig';
 import { AuthMiddleware } from './users/middlewares/auth.middleware';
+import { ArticlesModule } from './articles/articles.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({ ...connectionOptions, autoLoadEntities: true }),
     TagsModule,
     UsersModule,
+    ArticlesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
