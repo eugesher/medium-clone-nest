@@ -7,15 +7,19 @@ import { CreateArticleDto } from './dto/create-article.dto';
 import { User } from '../users/entities/user.entity';
 import { Article } from './entities/article.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { getRepository, Repository } from 'typeorm';
 import { ArticleResponseInterface } from './types/article-response.interface';
 import slugify from 'slugify';
+import { UpdateArticleDto } from './dto/update-article.dto';
+import { ArticlesResponseInterface } from './types/articles-response.interface';
 
 @Injectable()
 export class ArticlesService {
   constructor(
     @InjectRepository(Article)
     private readonly articleRepository: Repository<Article>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   private static generateSlug(title: string): string {
@@ -41,17 +45,63 @@ export class ArticlesService {
     return await this.articleRepository.save(article);
   }
 
-  // findAll() {
-  //   return `This action returns all articles`;
-  // }
+  async findAll(
+    userId: string,
+    query: any,
+  ): Promise<ArticlesResponseInterface> {
+    const queryBuilder = getRepository(Article)
+      .createQueryBuilder('articles')
+      .leftJoinAndSelect('articles.author', 'author')
+      .orderBy('articles.created_at', 'DESC');
+
+    const articlesCount = await queryBuilder.getCount();
+
+    if (query.tag) {
+      queryBuilder.andWhere('articles.tag_list LIKE :tag', {
+        tag: `%${query.tag}%`,
+      });
+    }
+
+    if (query.author) {
+      const author = await this.userRepository.findOne({
+        username: query.author,
+      });
+      queryBuilder.andWhere('articles.author_id = :id', { id: author.id });
+    }
+
+    if (query.limit) {
+      queryBuilder.limit(query.limit);
+    }
+
+    if (query.offset) {
+      queryBuilder.offset(query.offset);
+    }
+
+    const articles = await queryBuilder.getMany();
+
+    return { articles, articlesCount };
+  }
 
   async findOne(slug: string): Promise<Article> {
     return await this.articleRepository.findOne({ slug });
   }
 
-  // update(id: number, updateArticleDto: UpdateArticleDto) {
-  //   return `This action updates a #${id} article`;
-  // }
+  async update(
+    userId: string,
+    slug: string,
+    dto: UpdateArticleDto,
+  ): Promise<Article> {
+    const article = await this.findOne(slug);
+
+    if (!article) {
+      throw new NotFoundException('article not found');
+    } else if (article.author.id !== userId) {
+      throw new ForbiddenException('you can only delete your own articles');
+    } else {
+      Object.assign(article, dto);
+      return await this.articleRepository.save(article);
+    }
+  }
 
   async remove(userId: string, slug: string) {
     const article = await this.findOne(slug);

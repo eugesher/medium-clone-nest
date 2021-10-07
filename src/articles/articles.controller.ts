@@ -8,6 +8,8 @@ import {
   UsePipes,
   ValidationPipe,
   Delete,
+  Patch,
+  Query,
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
@@ -15,6 +17,8 @@ import { AuthGuard } from '../users/guards/auth.guard';
 import { UserDecorator } from '../users/decorators/user.decorator';
 import { User } from '../users/entities/user.entity';
 import { ArticleResponseInterface } from './types/article-response.interface';
+import { UpdateArticleDto } from './dto/update-article.dto';
+import { ArticlesResponseInterface } from './types/articles-response.interface';
 
 @Controller('articles')
 export class ArticlesController {
@@ -31,10 +35,13 @@ export class ArticlesController {
     return this.articlesService.buildArticleResponse(article);
   }
 
-  // @Get()
-  // findAll() {
-  //   return this.articlesService.findAll();
-  // }
+  @Get()
+  async findAll(
+    @UserDecorator('id') userId: string,
+    @Query('') query: any,
+  ): Promise<ArticlesResponseInterface> {
+    return await this.articlesService.findAll(userId, query);
+  }
 
   @Get(':slug')
   async findOne(
@@ -44,10 +51,17 @@ export class ArticlesController {
     return this.articlesService.buildArticleResponse(article);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateArticleDto: UpdateArticleDto) {
-  //   return this.articlesService.update(+id, updateArticleDto);
-  // }
+  @Patch(':slug')
+  @UseGuards(AuthGuard)
+  @UsePipes(new ValidationPipe())
+  async update(
+    @UserDecorator('id') userId: string,
+    @Param('slug') slug: string,
+    @Body('article') dto: UpdateArticleDto,
+  ): Promise<ArticleResponseInterface> {
+    const article = await this.articlesService.update(userId, slug, dto);
+    return this.articlesService.buildArticleResponse(article);
+  }
 
   @Delete(':slug')
   @UseGuards(AuthGuard)
