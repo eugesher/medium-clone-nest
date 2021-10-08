@@ -24,6 +24,19 @@ export class ProfilesService {
     return { profile };
   }
 
+  async findOne(userId: string, username: string): Promise<ProfileType> {
+    const profile = await this.userRepository.findOne({ username });
+
+    if (!profile) throw new NotFoundException('profile not found');
+
+    const follow = await this.followRepository.findOne({
+      followerId: userId,
+      followingId: profile.id,
+    });
+
+    return { ...profile, following: Boolean(follow) };
+  }
+
   async follow(userId: string, username: string): Promise<ProfileType> {
     const profile = await this.userRepository.findOne({ username });
 
@@ -50,22 +63,22 @@ export class ProfilesService {
     return { ...profile, following: true };
   }
 
-  // findAll() {
-  //   return `This action returns all profiles`;
-  // }
-
-  async findOne(userId: string, username: string): Promise<ProfileType> {
+  async unfollow(userId: string, username: string): Promise<ProfileType> {
     const profile = await this.userRepository.findOne({ username });
 
-    if (!profile) throw new NotFoundException('profile not found');
+    if (!profile) {
+      throw new NotFoundException('profile not found');
+    }
+
+    if (userId === profile.id) {
+      throw new BadRequestException('it is impossible to follow yourself ');
+    }
+
+    await this.followRepository.delete({
+      followerId: userId,
+      followingId: profile.id,
+    });
 
     return { ...profile, following: false };
   }
-
-  // update(id: number, updateProfileDto: UpdateProfileDto) {
-  //   return `This action updates a #${id} profile`;
-  // }
-  // remove(id: number) {
-  //   return `This action removes a #${id} profile`;
-  // }
 }

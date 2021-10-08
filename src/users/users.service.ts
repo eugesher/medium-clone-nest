@@ -45,9 +45,11 @@ export class UsersService {
 
   async create(dto: CreateUserDto): Promise<User> {
     switch (true) {
-      case !!(await this.userRepository.findOne({ email: dto.email })):
+      case Boolean(await this.userRepository.findOne({ email: dto.email })):
         throw new UnprocessableEntityException('email is already taken');
-      case !!(await this.userRepository.findOne({ username: dto.username })):
+      case Boolean(
+        await this.userRepository.findOne({ username: dto.username }),
+      ):
         throw new UnprocessableEntityException('username is already taken');
       default:
         const user = new User();
@@ -63,7 +65,7 @@ export class UsersService {
     );
 
     switch (false) {
-      case !!user:
+      case Boolean(user):
         throw new ForbiddenException('invalid credentials');
       case await compare(dto.password, user.password):
         throw new ForbiddenException('invalid credentials');
