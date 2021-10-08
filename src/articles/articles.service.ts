@@ -12,6 +12,7 @@ import { ArticleResponseInterface } from './types/article-response.interface';
 import slugify from 'slugify';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { ArticlesResponseInterface } from './types/articles-response.interface';
+import { Follow } from '../profiles/entities/follow.entity';
 
 @Injectable()
 export class ArticlesService {
@@ -20,6 +21,8 @@ export class ArticlesService {
     private readonly articleRepository: Repository<Article>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Follow)
+    private readonly followRepository: Repository<Follow>,
   ) {}
 
   private static generateSlug(title: string): string {
@@ -108,6 +111,38 @@ export class ArticlesService {
     });
 
     return { articles: articlesWithFavorites, articlesCount };
+  }
+
+  async getFeed(
+    userId: string,
+    query: any,
+  ): Promise<ArticlesResponseInterface> {
+    const follows = await this.followRepository.find({ followerId: userId });
+
+    if (!follows.length) {
+      return { articles: [], articlesCount: 0 };
+    }
+
+    const followingUserIds = follows.map((follow) => follow.followingId);
+    const queryBuilder = getRepository(Article)
+      .createQueryBuilder('articles')
+      .leftJoinAndSelect('articles.author', 'author')
+      .where('articles.author_id IN (:...ids)', { ids: followingUserIds })
+      .orderBy('articles.created_at', 'DESC');
+
+    const articlesCount = await queryBuilder.getCount();
+
+    if (query.limit) {
+      queryBuilder.limit(query.limit);
+    }
+
+    if (query.offset) {
+      queryBuilder.offset(query.offset);
+    }
+
+    const articles = await queryBuilder.getMany();
+
+    return { articles, articlesCount };
   }
 
   async findOne(slug: string): Promise<Article> {

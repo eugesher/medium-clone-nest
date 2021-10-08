@@ -43,6 +43,15 @@ export class ArticlesController {
     return await this.articlesService.findAll(userId, query);
   }
 
+  @Get('feed')
+  @UseGuards(AuthGuard)
+  async getFeed(
+    @CurrentUser('id') userId: string,
+    @Query() query: any,
+  ): Promise<ArticlesResponseInterface> {
+    return await this.articlesService.getFeed(userId, query);
+  }
+
   @Get(':slug')
   async findOne(
     @Param('slug') slug: string,
