@@ -14,7 +14,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseInterface } from './types/user-response.interface';
 import { LoginUserDto } from './dto/login-user.dto';
-import { UserDecorator } from './decorators/user.decorator';
+import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from './entities/user.entity';
 import { AuthGuard } from './guards/auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -42,16 +42,14 @@ export class UsersController {
 
   @Get('me')
   @UseGuards(AuthGuard)
-  async getCurrent(
-    @UserDecorator() user: User,
-  ): Promise<UserResponseInterface> {
+  async getCurrent(@CurrentUser() user: User): Promise<UserResponseInterface> {
     return this.usersService.buildUserResponse(user);
   }
 
   @Patch('me')
   @UseGuards(AuthGuard)
   async updateCurrent(
-    @UserDecorator('id') id: string,
+    @CurrentUser('id') id: string,
     @Body('user') dto: UpdateUserDto,
   ) {
     const user = await this.usersService.update(id, dto);
