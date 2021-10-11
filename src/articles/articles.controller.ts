@@ -6,7 +6,6 @@ import {
   Param,
   UseGuards,
   UsePipes,
-  ValidationPipe,
   Delete,
   Patch,
   Query,
@@ -19,6 +18,7 @@ import { User } from '../users/entities/user.entity';
 import { ArticleResponseInterface } from './types/article-response.interface';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { ArticlesResponseInterface } from './types/articles-response.interface';
+import { BackendValidationPipe } from '../shared/pipes/backend-validation.pipe';
 
 @Controller('articles')
 export class ArticlesController {
@@ -26,7 +26,7 @@ export class ArticlesController {
 
   @Post()
   @UseGuards(AuthGuard)
-  @UsePipes(new ValidationPipe())
+  @UsePipes(new BackendValidationPipe())
   async create(
     @CurrentUser() user: User,
     @Body('article') dto: CreateArticleDto,
@@ -62,7 +62,7 @@ export class ArticlesController {
 
   @Patch(':slug')
   @UseGuards(AuthGuard)
-  @UsePipes(new ValidationPipe())
+  @UsePipes(new BackendValidationPipe())
   async update(
     @CurrentUser('id') userId: string,
     @Param('slug') slug: string,

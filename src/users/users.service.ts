@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { sign } from 'jsonwebtoken';
 import { UserResponseInterface } from './types/user-response.interface';
-import { LoginUserDto } from './dto/login-user.dto';
+import { LoginUserDto } from '../../../tweeter-nest/src/users/dto/login-user.dto';
 import { compare } from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
 
